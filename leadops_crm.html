@@ -1,0 +1,634 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--color-background-tertiary); }
+.app { display: flex; flex-direction: column; min-height: 600px; }
+.navbar { background: #185FA5; color: #fff; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+.navbar-brand { font-size: 17px; font-weight: 500; color: #fff; }
+.navbar-nav { display: flex; gap: 4px; }
+.nav-btn { background: transparent; border: none; color: rgba(255,255,255,0.85); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: background 0.15s; }
+.nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,0.15); color: #fff; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.user-badge { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: #fff; }
+.logout-btn { background: #A32D2D; border: none; color: #fff; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+.page { display: none; padding: 20px; }
+.page.active { display: block; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px 20px; margin-bottom: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; }
+.metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.metric-sub { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.section-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 14px; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th { text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+.table td { padding: 10px 12px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); }
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--color-background-secondary); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+.badge-blue { background: #E6F1FB; color: #0C447C; }
+.badge-green { background: #EAF3DE; color: #3B6D11; }
+.badge-amber { background: #FAEEDA; color: #854F0B; }
+.badge-red { background: #FCEBEB; color: #A32D2D; }
+.badge-purple { background: #EEEDFE; color: #3C3489; }
+.badge-gray { background: #F1EFE8; color: #5F5E5A; }
+.btn { padding: 6px 14px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; font-size: 13px; transition: background 0.15s; }
+.btn:hover { background: var(--color-background-secondary); }
+.btn-primary { background: #185FA5; color: #fff; border-color: #185FA5; }
+.btn-primary:hover { background: #0C447C; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-danger { background: #A32D2D; color: #fff; border-color: #A32D2D; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.page-title { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+.tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 20px; }
+.tab { padding: 8px 16px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab.active { color: #185FA5; border-bottom-color: #185FA5; font-weight: 500; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; display: block; }
+select, input[type=text], input[type=email], textarea { width: 100%; padding: 7px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; background: var(--color-background-primary); color: var(--color-text-primary); }
+textarea { resize: vertical; min-height: 80px; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 24px; width: 480px; max-width: 95vw; max-height: 80vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-title { font-size: 16px; font-weight: 500; }
+.modal-close { background: none; border: none; cursor: pointer; color: var(--color-text-secondary); font-size: 18px; }
+.dept-tree { font-size: 13px; }
+.dept-parent { font-weight: 500; color: var(--color-text-primary); padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.dept-child { color: var(--color-text-secondary); padding: 4px 0 4px 20px; font-size: 12px; }
+.activity-item { padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; gap: 10px; align-items: flex-start; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: #185FA5; margin-top: 4px; flex-shrink: 0; }
+.activity-text { font-size: 13px; color: var(--color-text-primary); }
+.activity-time { font-size: 11px; color: var(--color-text-tertiary); }
+.comment-item { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; margin-bottom: 8px; }
+.comment-author { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); }
+.comment-text { font-size: 13px; color: var(--color-text-primary); margin-top: 3px; }
+.comment-time { font-size: 11px; color: var(--color-text-tertiary); margin-top: 3px; }
+.role-pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; }
+.sidebar { width: 200px; background: var(--color-background-primary); border-right: 0.5px solid var(--color-border-tertiary); padding: 12px; flex-shrink: 0; }
+.main-content { flex: 1; padding: 20px; overflow-y: auto; }
+.content-area { display: flex; flex: 1; }
+.hidden { display: none !important; }
+.login-screen { display: flex; align-items: center; justify-content: center; min-height: 600px; background: linear-gradient(135deg, #185FA5 0%, #3C3489 100%); }
+.login-card { background: var(--color-background-primary); border-radius: var(--border-radius-lg); padding: 36px 32px; width: 360px; text-align: center; }
+.login-title { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+.login-sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 28px; }
+.role-select-group { margin-bottom: 16px; text-align: left; }
+.google-btn { width: 100%; padding: 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
+.google-btn:hover { background: var(--color-background-secondary); }
+.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 0 4px; }
+.bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.bar { width: 100%; border-radius: 3px 3px 0 0; transition: opacity 0.2s; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; }
+.disposition-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+</style>
+
+<div class="app" id="app">
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div style="font-size: 32px; margin-bottom: 8px;">🏢</div>
+    <div class="login-title">LeadOpsCRM</div>
+    <div class="login-sub">Lead Management System</div>
+    <div class="role-select-group">
+      <label class="form-label">Select your role to demo</label>
+      <select id="demoRole">
+        <option value="superadmin">Super Admin</option>
+        <option value="admin">Admin</option>
+        <option value="manager">Manager</option>
+        <option value="tl">Team Leader</option>
+        <option value="atl">Assistant Team Leader</option>
+        <option value="agent">Agent</option>
+      </select>
+    </div>
+    <div class="role-select-group">
+      <label class="form-label">Department</label>
+      <select id="demoDept">
+        <option value="HM">Higher Management</option>
+        <option value="NTC">NTC</option>
+        <option value="CRLA">CRLA</option>
+        <option value="NLPC">NLPC</option>
+        <option value="HR">HR Inbound</option>
+      </select>
+    </div>
+    <button class="google-btn" onclick="doLogin()">
+      <i class="ti ti-brand-google" aria-hidden="true"></i> Sign in with Google SSO
+    </button>
+    <p style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 16px;">Use your organization credentials</p>
+  </div>
+</div>
+
+<div id="mainApp" class="hidden">
+  <div class="navbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span class="navbar-brand"><i class="ti ti-building" aria-hidden="true"></i> LeadOpsCRM</span>
+      <div class="navbar-nav" id="navLinks"></div>
+    </div>
+    <div class="nav-right">
+      <span class="user-badge" id="userBadge"></span>
+      <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout" aria-hidden="true"></i> Logout</button>
+    </div>
+  </div>
+
+  <div id="pageDashboard" class="page active" style="padding:20px;">
+    <div class="page-header">
+      <div class="page-title">Dashboard</div>
+      <span id="dashDate" style="font-size:12px;color:var(--color-text-secondary);"></span>
+    </div>
+    <div class="grid-4" id="dashMetrics"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="card">
+        <div class="section-title">Lead Status by Department</div>
+        <div class="bar-chart" id="barChart"></div>
+        <div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--color-text-secondary);">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#185FA5;border-radius:2px;margin-right:3px;"></span>Open</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#3B6D11;border-radius:2px;margin-right:3px;"></span>Closed</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#BA7517;border-radius:2px;margin-right:3px;"></span>Hold</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Recent Activity</div>
+        <div id="activityFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pageLeads" class="page" style="padding:20px;">
+    <div class="page-header">
+      <div class="page-title">My Leads</div>
+      <div style="display:flex;gap:8px;">
+        <select id="filterStatus" style="width:120px;" onchange="filterLeads()">
+          <option value="">All Status</option>
+          <option value="Open">Open</option>
+          <option value="Closed">Closed</option>
+          <option value="On Hold">On Hold</option>
+          <option value="Recycled">Recycled</option>
+        </select>
+        <select id="filterDisp" style="width:140px;" onchange="filterLeads()">
+          <option value="">All Dispositions</option>
+          <option value="New">New</option>
+          <option value="Contacted">Contacted</option>
+          <option value="Interested">Interested</option>
+          <option value="Not Interested">Not Interested</option>
+          <option value="Follow Up">Follow Up</option>
+          <option value="Converted">Converted</option>
+        </select>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="table" id="leadsTable">
+        <thead><tr>
+          <th>Lead ID</th><th>Name</th><th>Email</th><th>Department</th><th>Disposition</th><th>Status</th><th>Assigned To</th><th>Action</th>
+        </tr></thead>
+        <tbody id="leadsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="pageAdmin" class="page" style="padding:20px;">
+    <div class="page-title" style="margin-bottom:16px;">Admin Panel</div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchAdminTab('users',this)">Users</div>
+      <div class="tab" onclick="switchAdminTab('roles',this)">Roles & Permissions</div>
+      <div class="tab" onclick="switchAdminTab('depts',this)">Departments</div>
+      <div class="tab" onclick="switchAdminTab('dispositions',this)">Dispositions</div>
+    </div>
+    <div id="adminUsers">
+      <div class="page-header">
+        <span style="font-size:14px;color:var(--color-text-secondary);" id="userCount"></span>
+        <button class="btn btn-primary btn-sm" onclick="openModal('addUserModal')"><i class="ti ti-plus" aria-hidden="true"></i> Add User</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="table">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="adminRoles" class="hidden">
+      <div class="card">
+        <div class="section-title">Role Hierarchy & Permissions</div>
+        <table class="table">
+          <thead><tr><th>Role</th><th>Level</th><th>Key Permissions</th></tr></thead>
+          <tbody id="rolesBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="adminDepts" class="hidden">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="section-title">CR Campaign</div>
+          <div class="dept-tree" id="campaignDepts"></div>
+        </div>
+        <div class="card">
+          <div class="section-title">NLPC & HR Team</div>
+          <div class="dept-tree" id="nlpcDepts"></div>
+        </div>
+      </div>
+    </div>
+    <div id="adminDispositions" class="hidden">
+      <div class="card">
+        <div class="section-title">Customise Dispositions per Department</div>
+        <div id="dispList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pageReports" class="page" style="padding:20px;">
+    <div class="page-header">
+      <div class="page-title">Reports</div>
+      <button class="btn btn-primary btn-sm" onclick="sendPrompt('Generate a custom report for me with filters by department, date range, and disposition')"><i class="ti ti-download" aria-hidden="true"></i> Custom Report ↗</button>
+    </div>
+    <div class="grid-3">
+      <div class="card" style="cursor:pointer;" onclick="sendPrompt('Show me a detailed department-wise lead report')">
+        <div style="font-size:28px;margin-bottom:8px;"><i class="ti ti-chart-bar" aria-hidden="true" style="color:#185FA5;"></i></div>
+        <div style="font-weight:500;font-size:14px;">Department Report</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px;">Lead stats by department</div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="sendPrompt('Show me agent performance report')">
+        <div style="font-size:28px;margin-bottom:8px;"><i class="ti ti-users" aria-hidden="true" style="color:#3B6D11;"></i></div>
+        <div style="font-weight:500;font-size:14px;">Agent Performance</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px;">Conversion & activity rates</div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="sendPrompt('Show me disposition analysis report')">
+        <div style="font-size:28px;margin-bottom:8px;"><i class="ti ti-tag" aria-hidden="true" style="color:#854F0B;"></i></div>
+        <div style="font-weight:500;font-size:14px;">Disposition Analysis</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px;">Outcome breakdown</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Export Options</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-sm"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i> Export CSV</button>
+        <button class="btn btn-sm"><i class="ti ti-file-text" aria-hidden="true"></i> Export Excel</button>
+        <button class="btn btn-sm"><i class="ti ti-file-type-pdf" aria-hidden="true"></i> Export PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="modal-overlay" id="leadModal">
+  <div class="modal" style="width:560px;">
+    <div class="modal-header">
+      <div class="modal-title" id="leadModalTitle">Lead Details</div>
+      <button class="modal-close" onclick="closeModal('leadModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="leadModalBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New User</div>
+      <button class="modal-close" onclick="closeModal('addUserModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">First Name</label><input type="text" id="newFName" placeholder="John"></div>
+      <div class="form-group"><label class="form-label">Last Name</label><input type="text" id="newLName" placeholder="Doe"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Email</label><input type="email" id="newEmail" placeholder="john@company.com"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Role</label>
+        <select id="newRole">
+          <option>Agent</option><option>Assistant Team Leader</option><option>Team Leader</option><option>Manager</option><option>Admin</option><option>Super Admin</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Department</label>
+        <select id="newDept">
+          <option>NTC</option><option>NTC Email</option><option>CRLA</option><option>CRLA Email</option><option>CRLB</option><option>CRLB Email</option><option>CRLD</option><option>CRLD Email</option><option>CRM</option><option>CRM Email</option><option>CRMFC</option><option>CRMC Email</option><option>NLPC Inbound</option><option>HR Inbound</option><option>NLPC</option><option>NLPC Postsales</option><option>NLPC Postsales Email</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="addUser()">Create User</button>
+  </div>
+</div>
+
+<script>
+const ROLES = {
+  superadmin: { label: 'Super Admin', canSeeAdmin: true, canSeeReports: true, canMoveLeads: true, seeAllLeads: true },
+  admin: { label: 'Admin', canSeeAdmin: true, canSeeReports: true, canMoveLeads: true, seeAllLeads: true },
+  manager: { label: 'Manager', canSeeAdmin: true, canSeeReports: true, canMoveLeads: true, seeAllLeads: true },
+  tl: { label: 'Team Leader', canSeeAdmin: false, canSeeReports: true, canMoveLeads: true, seeAllLeads: false },
+  atl: { label: 'Asst. Team Leader', canSeeAdmin: false, canSeeReports: true, canMoveLeads: true, seeAllLeads: false },
+  agent: { label: 'Agent', canSeeAdmin: false, canSeeReports: false, canMoveLeads: false, seeAllLeads: false }
+};
+
+const DEPTS = ['NTC','NTC Email','CRLA','CRLA Email','CRLB','CRLB Email','CRLD','CRLD Email','CRM','CRM Email','CRMFC','CRMC Email','NLPC Inbound','HR Inbound','NLPC','NLPC Postsales','NLPC Postsales Email'];
+
+const DISPOSITIONS = ['New','Contacted','Interested','Not Interested','Follow Up','Converted','DNP','Callback','Wrong Number'];
+
+let currentRole = 'superadmin';
+let currentDept = 'HM';
+let currentUser = '';
+
+let leads = [
+  { id:'L-001', first:'Priya', last:'Sharma', email:'priya.s@mail.com', dept:'NTC', disp:'Interested', status:'Open', assignee:'Rahul K', stage:'Initial' },
+  { id:'L-002', first:'James', last:'Wilson', email:'j.wilson@mail.com', dept:'CRLA', disp:'Follow Up', status:'Open', assignee:'Sara M', stage:'Initial' },
+  { id:'L-003', first:'Aisha', last:'Khan', email:'a.khan@mail.com', dept:'NLPC', disp:'Contacted', status:'On Hold', assignee:'Rahul K', stage:'Initial' },
+  { id:'L-004', first:'Tom', last:'Brown', email:'t.brown@mail.com', dept:'CRM', disp:'Converted', status:'Closed', assignee:'Mike D', stage:'Closed' },
+  { id:'L-005', first:'Nina', last:'Patel', email:'n.patel@mail.com', dept:'CRLB', disp:'New', status:'Open', assignee:'Sara M', stage:'Initial' },
+  { id:'L-006', first:'Carlos', last:'Diaz', email:'c.diaz@mail.com', dept:'HR Inbound', disp:'Not Interested', status:'Closed', assignee:'Mike D', stage:'Closed' },
+  { id:'L-007', first:'Emma', last:'Lee', email:'e.lee@mail.com', dept:'NLPC Inbound', disp:'Callback', status:'Open', assignee:'Rahul K', stage:'Initial' },
+  { id:'L-008', first:'Arjun', last:'Mehta', email:'a.mehta@mail.com', dept:'CRLD', disp:'DNP', status:'Recycled', assignee:'Sara M', stage:'Initial' },
+];
+
+let users = [
+  { name:'Rahul Kumar', email:'rahul@co.com', role:'Agent', dept:'NTC', active:true },
+  { name:'Sara Malik', email:'sara@co.com', role:'Team Leader', dept:'CRLA', active:true },
+  { name:'Mike Desai', email:'mike@co.com', role:'Manager', dept:'NLPC', active:true },
+  { name:'Priti Shah', email:'priti@co.com', role:'Admin', dept:'HM', active:true },
+  { name:'James Ops', email:'james@co.com', role:'Agent', dept:'CRM', active:false },
+];
+
+let leadComments = {};
+let leadHistory = {};
+
+function doLogin() {
+  currentRole = document.getElementById('demoRole').value;
+  currentDept = document.getElementById('demoDept').value;
+  currentUser = ROLES[currentRole].label + ' · ' + currentDept;
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainApp').classList.remove('hidden');
+  buildNav();
+  renderDashboard();
+  renderLeads();
+  renderAdmin();
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('userBadge').textContent = currentUser;
+}
+
+function doLogout() {
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('mainApp').classList.add('hidden');
+}
+
+function buildNav() {
+  const r = ROLES[currentRole];
+  let html = `<button class="nav-btn active" onclick="showPage('Dashboard',this)"><i class="ti ti-home" aria-hidden="true"></i> Dashboard</button>
+    <button class="nav-btn" onclick="showPage('Leads',this)"><i class="ti ti-list" aria-hidden="true"></i> My Leads</button>`;
+  if(r.canSeeAdmin) html += `<button class="nav-btn" onclick="showPage('Admin',this)"><i class="ti ti-settings" aria-hidden="true"></i> Admin Panel</button>`;
+  if(r.canSeeReports) html += `<button class="nav-btn" onclick="showPage('Reports',this)"><i class="ti ti-chart-bar" aria-hidden="true"></i> Reports</button>`;
+  document.getElementById('navLinks').innerHTML = html;
+}
+
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+function renderDashboard() {
+  const open = leads.filter(l=>l.status==='Open').length;
+  const closed = leads.filter(l=>l.status==='Closed').length;
+  const hold = leads.filter(l=>l.status==='On Hold').length;
+  const recycled = leads.filter(l=>l.status==='Recycled').length;
+  document.getElementById('dashMetrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Total Leads</div><div class="metric-value">${leads.length}</div></div>
+    <div class="metric"><div class="metric-label">Open</div><div class="metric-value" style="color:#185FA5;">${open}</div></div>
+    <div class="metric"><div class="metric-label">Closed</div><div class="metric-value" style="color:#3B6D11;">${closed}</div></div>
+    <div class="metric"><div class="metric-label">On Hold</div><div class="metric-value" style="color:#BA7517;">${hold}</div></div>`;
+
+  const deptStats = {};
+  leads.forEach(l => {
+    if(!deptStats[l.dept]) deptStats[l.dept] = {open:0,closed:0,hold:0};
+    if(l.status==='Open') deptStats[l.dept].open++;
+    else if(l.status==='Closed') deptStats[l.dept].closed++;
+    else deptStats[l.dept].hold++;
+  });
+  const max = Math.max(...Object.values(deptStats).map(d=>d.open+d.closed+d.hold));
+  let barHtml = '';
+  Object.entries(deptStats).forEach(([dept,s]) => {
+    const total = s.open+s.closed+s.hold;
+    const h = Math.round((total/max)*100);
+    barHtml += `<div class="bar-group">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1px;height:${h}px;width:100%;">
+        <div class="bar" style="background:#185FA5;height:${Math.round((s.open/total)*100)}%;"></div>
+        <div class="bar" style="background:#3B6D11;height:${Math.round((s.closed/total)*100)}%;"></div>
+        <div class="bar" style="background:#BA7517;height:${Math.round((s.hold/total)*100)}%;"></div>
+      </div>
+      <div class="bar-label">${dept}</div>
+    </div>`;
+  });
+  document.getElementById('barChart').innerHTML = barHtml;
+
+  const activities = [
+    {text:'L-004 marked as Converted', time:'2 min ago'},
+    {text:'L-001 assigned to Rahul K', time:'15 min ago'},
+    {text:'Comment added on L-003', time:'1 hr ago'},
+    {text:'L-008 moved to Recycled', time:'2 hr ago'},
+    {text:'New user Sara Malik added', time:'Today'},
+  ];
+  document.getElementById('activityFeed').innerHTML = activities.map(a=>`
+    <div class="activity-item">
+      <div class="activity-dot"></div>
+      <div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time}</div></div>
+    </div>`).join('');
+}
+
+function renderLeads() {
+  const statusFilter = document.getElementById('filterStatus')?.value || '';
+  const dispFilter = document.getElementById('filterDisp')?.value || '';
+  const r = ROLES[currentRole];
+  let visible = leads;
+  if(!r.seeAllLeads) visible = leads.filter(l => l.assignee.includes('Rahul'));
+  if(statusFilter) visible = visible.filter(l=>l.status===statusFilter);
+  if(dispFilter) visible = visible.filter(l=>l.disp===dispFilter);
+
+  const statusColor = {Open:'badge-blue',Closed:'badge-green','On Hold':'badge-amber',Recycled:'badge-gray'};
+  const dispColor = {New:'badge-purple',Contacted:'badge-blue',Interested:'badge-green','Not Interested':'badge-red','Follow Up':'badge-amber',Converted:'badge-green',DNP:'badge-red',Callback:'badge-amber','Wrong Number':'badge-red'};
+
+  document.getElementById('leadsBody').innerHTML = visible.map(l=>`
+    <tr>
+      <td style="font-weight:500;color:#185FA5;">${l.id}</td>
+      <td>${l.first} ${l.last}</td>
+      <td>${l.email}</td>
+      <td><span class="badge badge-gray">${l.dept}</span></td>
+      <td><span class="badge ${dispColor[l.disp]||'badge-gray'}"><span class="disposition-dot" style="background:currentColor;opacity:0.6;"></span>${l.disp}</span></td>
+      <td><span class="badge ${statusColor[l.status]||'badge-gray'}">${l.status}</span></td>
+      <td>${l.assignee}</td>
+      <td><button class="btn btn-primary btn-sm" onclick="viewLead('${l.id}')"><i class="ti ti-eye" aria-hidden="true"></i> View</button></td>
+    </tr>`).join('');
+}
+
+function filterLeads() { renderLeads(); }
+
+function viewLead(lid) {
+  const lead = leads.find(l=>l.id===lid);
+  if(!lead) return;
+  const r = ROLES[currentRole];
+  if(!leadComments[lid]) leadComments[lid] = [{author:'System',text:'Lead created and assigned.',time:'Jun 20, 2026'}];
+  if(!leadHistory[lid]) leadHistory[lid] = [{action:'CREATED',by:'System',time:'Jun 20, 2026'},{action:'ASSIGNED',by:'Admin',time:'Jun 21, 2026'}];
+
+  const canMove = r.canMoveLeads;
+  document.getElementById('leadModalTitle').textContent = `Lead — ${lead.id}`;
+  document.getElementById('leadModalBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div><div class="form-label">Name</div><div style="font-size:14px;font-weight:500;">${lead.first} ${lead.last}</div></div>
+      <div><div class="form-label">Email</div><div style="font-size:14px;">${lead.email}</div></div>
+      <div><div class="form-label">Mobile</div><div style="font-size:14px;color:var(--color-text-tertiary);">●●●●●●●●●● (hidden)</div></div>
+      <div><div class="form-label">Department</div><div style="font-size:14px;">${lead.dept}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div>
+        <label class="form-label">Disposition *</label>
+        <select id="ld_disp" onchange="updateLeadDisp('${lid}')">
+          ${DISPOSITIONS.map(d=>`<option ${d===lead.disp?'selected':''}>${d}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Status</label>
+        <select id="ld_status" ${canMove?'':'disabled'} onchange="updateLeadStatus('${lid}')">
+          ${['Open','Closed','On Hold','Recycled'].map(s=>`<option ${s===lead.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Assigned To</label>
+        <select id="ld_assign" ${canMove?'':'disabled'} onchange="updateLeadAssign('${lid}')">
+          ${users.filter(u=>u.active).map(u=>`<option ${u.name===lead.assignee?'selected':''}>${u.name}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    ${canMove?`<div style="margin-bottom:14px;">
+      <label class="form-label">Move to Department</label>
+      <div style="display:flex;gap:8px;">
+        <select id="ld_dept" style="flex:1;">${DEPTS.map(d=>`<option ${d===lead.dept?'selected':''}>${d}</option>`).join('')}</select>
+        <button class="btn btn-sm" onclick="moveLead('${lid}')"><i class="ti ti-arrows-exchange" aria-hidden="true"></i> Move</button>
+      </div>
+    </div>`:''}
+    <div style="border-top:0.5px solid var(--color-border-tertiary);padding-top:12px;margin-bottom:12px;">
+      <div style="font-size:14px;font-weight:500;margin-bottom:8px;">Comments & Notes *</div>
+      <div id="commentsArea">${leadComments[lid].map(c=>`
+        <div class="comment-item">
+          <div class="comment-author">${c.author}</div>
+          <div class="comment-text">${c.text}</div>
+          <div class="comment-time">${c.time}</div>
+        </div>`).join('')}</div>
+      <div style="margin-top:8px;">
+        <textarea id="newComment" placeholder="Add a comment (required before saving)..." rows="2"></textarea>
+        <button class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="addComment('${lid}')"><i class="ti ti-send" aria-hidden="true"></i> Add Comment</button>
+      </div>
+    </div>
+    <div style="border-top:0.5px solid var(--color-border-tertiary);padding-top:12px;">
+      <div style="font-size:14px;font-weight:500;margin-bottom:8px;">Activity Log</div>
+      ${leadHistory[lid].map(h=>`
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div><div class="activity-text"><strong>${h.action}</strong> by ${h.by}</div><div class="activity-time">${h.time}</div></div>
+        </div>`).join('')}
+    </div>`;
+  openModal('leadModal');
+}
+
+function updateLeadDisp(lid) {
+  const lead = leads.find(l=>l.id===lid);
+  lead.disp = document.getElementById('ld_disp').value;
+  addHistory(lid, 'DISPOSITION CHANGED', ROLES[currentRole].label);
+}
+function updateLeadStatus(lid) {
+  const lead = leads.find(l=>l.id===lid);
+  lead.status = document.getElementById('ld_status').value;
+  addHistory(lid, 'STATUS UPDATED', ROLES[currentRole].label);
+}
+function updateLeadAssign(lid) {
+  const lead = leads.find(l=>l.id===lid);
+  lead.assignee = document.getElementById('ld_assign').value;
+  addHistory(lid, 'REASSIGNED', ROLES[currentRole].label);
+}
+function moveLead(lid) {
+  const lead = leads.find(l=>l.id===lid);
+  const newDept = document.getElementById('ld_dept').value;
+  lead.dept = newDept;
+  addHistory(lid, 'MOVED TO '+newDept, ROLES[currentRole].label);
+  renderLeads();
+  renderDashboard();
+  viewLead(lid);
+}
+function addHistory(lid, action, by) {
+  if(!leadHistory[lid]) leadHistory[lid] = [];
+  leadHistory[lid].push({action, by, time: 'Just now'});
+  renderLeads();
+  renderDashboard();
+}
+function addComment(lid) {
+  const text = document.getElementById('newComment').value.trim();
+  if(!text) { alert('Comment is required!'); return; }
+  if(!leadComments[lid]) leadComments[lid] = [];
+  leadComments[lid].push({author: ROLES[currentRole].label, text, time:'Just now'});
+  addHistory(lid, 'COMMENT ADDED', ROLES[currentRole].label);
+  viewLead(lid);
+}
+
+function renderAdmin() {
+  document.getElementById('userCount').textContent = users.length + ' users';
+  document.getElementById('usersBody').innerHTML = users.map((u,i)=>`
+    <tr>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td><span class="badge ${u.role==='Super Admin'||u.role==='Admin'?'badge-purple':u.role==='Manager'?'badge-blue':u.role==='Team Leader'?'badge-green':u.role==='Asst. Team Leader'?'badge-amber':'badge-gray'}">${u.role}</span></td>
+      <td>${u.dept}</td>
+      <td><span class="badge ${u.active?'badge-green':'badge-red'}">${u.active?'Active':'Inactive'}</span></td>
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-sm" onclick="toggleUser(${i})">${u.active?'Deactivate':'Activate'}</button>
+        <button class="btn btn-sm" onclick="sendPrompt('Assign a different role to ${u.name}')">Edit role ↗</button>
+      </td>
+    </tr>`).join('');
+
+  const roleRows = [
+    ['Super Admin',6,'All access — full system control'],
+    ['Admin',5,'Changes, corrections, lead & role assignments'],
+    ['Manager',4,'Department management, lead operations'],
+    ['Team Leader',3,'Team management, lead movement'],
+    ['Asst. Team Leader',2,'Team support, lead operations'],
+    ['Agent',1,'View & work own assigned leads only'],
+  ];
+  document.getElementById('rolesBody').innerHTML = roleRows.map(([r,l,p])=>`
+    <tr><td><span class="badge ${r==='Super Admin'||r==='Admin'?'badge-purple':r==='Manager'?'badge-blue':r==='Team Leader'?'badge-green':r==='Asst. Team Leader'?'badge-amber':'badge-gray'}">${r}</span></td><td>${l}</td><td style="font-size:12px;color:var(--color-text-secondary);">${p}</td></tr>`).join('');
+
+  document.getElementById('campaignDepts').innerHTML = `
+    <div class="dept-parent"><i class="ti ti-building" aria-hidden="true"></i> CR Campaign</div>
+    ${['NTC','NTC Email','CRLA','CRLA Email','CRLB','CRLB Email','CRLD','CRLD Email','CRM','CRM Email'].map(d=>`<div class="dept-child">↳ ${d}</div>`).join('')}`;
+  document.getElementById('nlpcDepts').innerHTML = `
+    <div class="dept-parent"><i class="ti ti-building" aria-hidden="true"></i> NLPC & HR Team</div>
+    ${['CRMFC','CRMC Email','NLPC Inbound','HR Inbound','NLPC','NLPC Postsales','NLPC Postsales Email'].map(d=>`<div class="dept-child">↳ ${d}</div>`).join('')}`;
+
+  document.getElementById('dispList').innerHTML = DEPTS.slice(0,6).map(d=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);">
+      <div style="width:120px;font-size:13px;font-weight:500;">${d}</div>
+      <div style="flex:1;font-size:12px;color:var(--color-text-secondary);">${DISPOSITIONS.slice(0,4).join(' · ')}</div>
+      <button class="btn btn-sm" onclick="sendPrompt('Customise dispositions for ${d} department')">Edit ↗</button>
+    </div>`).join('');
+}
+
+function toggleUser(i) {
+  users[i].active = !users[i].active;
+  renderAdmin();
+}
+
+function addUser() {
+  const name = document.getElementById('newFName').value + ' ' + document.getElementById('newLName').value;
+  const email = document.getElementById('newEmail').value;
+  const role = document.getElementById('newRole').value;
+  const dept = document.getElementById('newDept').value;
+  if(!name.trim()||!email) { alert('Please fill in all required fields'); return; }
+  users.push({name, email, role, dept, active:true});
+  closeModal('addUserModal');
+  renderAdmin();
+}
+
+function switchAdminTab(tab, el) {
+  ['adminUsers','adminRoles','adminDepts','adminDispositions'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('admin'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+</script>
